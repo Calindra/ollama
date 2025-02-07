@@ -290,6 +290,9 @@ jobs:
             arch: amd64
             target: archive
           - os: linux
+            arch: riscv64
+            target: archive
+          - os: linux
             arch: amd64
             target: rocm
           - os: linux
