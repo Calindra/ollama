@@ -300,6 +300,7 @@ jobs:
             GOFLAGS=${{ env.GOFLAGS }}
             CGO_CFLAGS=${{ env.CGO_CFLAGS }}
             CGO_CXXFLAGS=${{ env.CGO_CXXFLAGS }}
+            FLAVOR=riscv64/ubuntu
           outputs: type=local,dest=dist/linux-riscv64
           cache-from: type=registry,ref=ollama/ollama:latest
           cache-to: type=inline

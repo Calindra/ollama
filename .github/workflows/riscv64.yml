@@ -6,9 +6,7 @@ on:
     branches: [ "feature/riscv64" ]
 jobs:
   build:
-    runs-on:
-      - riscv-builders
-      - soc-spacemit-k1
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
       with:
@@ -23,7 +21,9 @@ jobs:
     - name: generate
       run: go generate ./...
     - name: Build
-      run: go build -v .
+      run: |
+        export GOARCH=riscv64 
+        go build -v .
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v3.2.1-node20
       with:
