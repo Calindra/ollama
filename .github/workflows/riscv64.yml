@@ -3,7 +3,7 @@
 name: Build RISC-V ollama
 on:
   push:
-    branches: [ "riscv64" ]
+    branches: [ "feature/riscv64" ]
 jobs:
   build:
     runs-on:
