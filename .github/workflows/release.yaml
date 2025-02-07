@@ -283,7 +283,7 @@ jobs:
   #           dist\OllamaSetup.exe
   #           dist\ollama-windows-*.zip
   linux-build:
-    runs-on: linux
+    runs-on: ubuntu-latest
     environment: release
     needs: setup-environment
     env:
