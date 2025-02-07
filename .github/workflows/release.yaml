@@ -1,9 +1,10 @@
 name: release
 
-on:
-  push:
-    tags:
-      - 'v*'
+# on:
+#   push:
+#     tags:
+#       - 'v*'
+on: push
 
 env:
   CGO_CFLAGS: '-O3'
