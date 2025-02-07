@@ -18,14 +18,17 @@ jobs:
     - name: Set Version
       shell: bash
       run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
-    - name: generate
-      run: |
-        export GOARCH=riscv64
-        go generate ./...
+    # - name: generate
+    #   run: |
+    #     export GOARCH=riscv64
+    #     go generate ./...
+    # - name: Build
+    #   run: |
+    #     export GOARCH=riscv64 
+    #     go build -v .
     - name: Build
       run: |
-        export GOARCH=riscv64 
-        go build -v .
+        docker build -t builder-riscv64 -f Dockerfile-build .
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v4
       with:
