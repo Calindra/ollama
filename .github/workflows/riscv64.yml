@@ -25,7 +25,7 @@ jobs:
         export GOARCH=riscv64 
         go build -v .
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v3.2.1-node20
+      uses: actions/upload-artifact@v4
       with:
         name: ollama-riscv64-rva20.exe
         path: ollama
