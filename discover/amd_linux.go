@@ -1,7 +1,7 @@
 package discover
 
 import (
-	"bufio"
+	// "bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -10,12 +10,12 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"slices"
-	"sort"
+	// "slices"
+	// "sort"
 	"strconv"
 	"strings"
 
-	"github.com/ollama/ollama/envconfig"
+	// "github.com/ollama/ollama/envconfig"
 	"github.com/ollama/ollama/format"
 )
 
