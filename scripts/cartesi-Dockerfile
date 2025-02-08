@@ -44,6 +44,7 @@ WORKDIR /opt/cartesi/dapp
 COPY --from=build-stage /opt/cartesi/dapp/dist .
 
 ENV ROLLUP_HTTP_SERVER_URL="http://127.0.0.1:5004"
+ENV CUDA_VISIBLE_DEVICES="-1"
 
 COPY ./ollama .
 RUN chmod +x ./ollama

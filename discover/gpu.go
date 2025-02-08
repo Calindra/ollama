@@ -190,6 +190,10 @@ func GetGPUInfo() GpuInfoList {
 	// GPUs so we can report warnings if we see Nvidia/AMD but fail to load the libraries
 	gpuMutex.Lock()
 	defer gpuMutex.Unlock()
+	if os.Getenv("CUDA_VISIBLE_DEVICES") == "-1" {
+		resp := []GpuInfo{}
+		return resp
+	}
 	needRefresh := true
 	var cHandles *cudaHandles
 	var oHandles *oneapiHandles
