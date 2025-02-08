@@ -32,7 +32,8 @@ RUN <<EOF
 set -e
 apt-get update
 apt-get install -y --no-install-recommends \
-  busybox-static=1:1.30.1-7ubuntu3
+  busybox-static=1:1.30.1-7ubuntu3 \
+  curl
 rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/*
 useradd --create-home --user-group dapp
 EOF
@@ -43,6 +44,15 @@ WORKDIR /opt/cartesi/dapp
 COPY --from=build-stage /opt/cartesi/dapp/dist .
 
 ENV ROLLUP_HTTP_SERVER_URL="http://127.0.0.1:5004"
+
+COPY ./ollama .
+RUN chmod +x ./ollama
+# RUN ./ollama serve
+RUN ./ollama serve > /var/log/ollama.log 2>&1 & \
+    tail -f /var/log/ollama.log || true
+
+# RUN sleep 3
+# RUN curl http://127.0.0.1:11434/api/tags
 
 ENTRYPOINT ["rollup-init"]
 CMD ["node", "index.js"]
