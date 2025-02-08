@@ -32,12 +32,13 @@ COPY . .
 
 RUN go generate ./...
 RUN go build .
-# RUN apt-get update
-# RUN apt-get install -y cmake ccache
+
+RUN apt-get update
+RUN apt-get install -y cmake ccache
 # # RUN cmake --preset CPU -DCMAKE_CXX_FLAGS="-march=riscv64"
-# RUN cmake --preset CPU -DCMAKE_CXX_FLAGS="-march=rv64gc"
+RUN cmake --preset CPU -DCMAKE_CXX_FLAGS="-march=rv64gc"
 # # RUN cmake --preset CPU --trace-expand | grep 'CMAKE_CXX_FLAGS'
-# RUN cmake --build --preset CPU --parallel
+RUN cmake --build --preset CPU --parallel
 # RUN ls -lah
 
 # FROM --platform=linux/riscv64 ubuntu:22.04 AS runner
