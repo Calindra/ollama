@@ -5,7 +5,7 @@ RUN <<EOF
   set -eux
   nohup ollama serve&
   sleep 10
-  ollama pull qwen2.5:0.5b
+  ollama pull smollm:135m
 EOF
 # RUN ollama pull hf.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF:Q2_K
 

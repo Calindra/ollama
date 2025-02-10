@@ -29,17 +29,17 @@ docker create --name builder-riscv64-container builder-riscv64
 docker cp builder-riscv64-container:/opt/build/ollama ./ollama
 docker rm builder-riscv64-container
 
-echo "Delete dapp_v1"
-rm -rf ./dapp_v1
+# echo "Delete dapp_v1"
+# rm -rf ./dapp_v1
 
-cartesi create dapp_v1 --template typescript
+# cartesi create dapp_v1 --template typescript
 
 echo "Pristine dapp created with success!"
 
 cp -v ./ollama ./dapp_v1/
 rm -v ./dapp_v1/Dockerfile
 cp -v ./scripts/cartesi-Dockerfile ./dapp_v1/Dockerfile
-cp -v ./scripts/cartesi-index.ts  ./dapp_v1/src/index.ts
+# cp -v ./scripts/cartesi-index.ts  ./dapp_v1/src/index.ts
 
 cd ./dapp_v1
 yarn install --frozen-lockfile && yarn run build
