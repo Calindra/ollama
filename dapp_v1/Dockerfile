@@ -1,0 +1,77 @@
+# syntax=docker.io/docker/dockerfile:1
+
+FROM ollama/ollama:0.5.7 AS agentic
+RUN <<EOF
+  set -eux
+  nohup ollama serve&
+  sleep 10
+  ollama pull smollm:135m
+EOF
+# RUN ollama pull hf.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF:Q2_K
+
+# build stage: includes resources necessary for installing dependencies
+
+# Here the image's platform does not necessarily have to be riscv64.
+# If any needed dependencies rely on native binaries, you must use
+# a riscv64 image such as cartesi/node:20-jammy for the build stage,
+# to ensure that the appropriate binaries will be generated.
+FROM node:20.16.0-bookworm AS build-stage
+
+WORKDIR /opt/cartesi/dapp
+COPY . .
+RUN yarn install && yarn build
+
+# runtime stage: produces final image that will be executed
+
+# Here the image's platform MUST be linux/riscv64.
+# Give preference to small base images, which lead to better start-up
+# performance when loading the Cartesi Machine.
+FROM --platform=linux/riscv64 cartesi/node:20.16.0-jammy-slim
+
+ARG MACHINE_EMULATOR_TOOLS_VERSION=0.14.1
+ADD https://github.com/cartesi/machine-emulator-tools/releases/download/v${MACHINE_EMULATOR_TOOLS_VERSION}/machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb /
+RUN dpkg -i /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb \
+  && rm /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb
+
+LABEL io.cartesi.rollups.sdk_version=0.9.0
+LABEL io.cartesi.rollups.ram_size=2048Mi
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN <<EOF
+set -e
+apt-get update
+apt-get install -y --no-install-recommends \
+  busybox-static=1:1.30.1-7ubuntu3 \
+  curl
+rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/*
+useradd --create-home --user-group dapp
+EOF
+
+ENV PATH="/opt/cartesi/bin:${PATH}"
+
+WORKDIR /opt/cartesi/dapp
+COPY --from=build-stage /opt/cartesi/dapp/dist .
+
+ENV ROLLUP_HTTP_SERVER_URL="http://127.0.0.1:5004"
+ENV CUDA_VISIBLE_DEVICES="-1"
+
+COPY ./ollama .
+RUN chmod +x ./ollama
+# RUN ./ollama serve
+RUN nohup ./ollama serve > /var/log/ollama.log 2>&1 &
+    # tail -f /var/log/ollama.log || true
+
+# RUN sleep 10
+# RUN sleep 10 && tail /var/log/ollama.log
+# RUN curl http://127.0.0.1:11434/api/tags
+
+ENV OLLAMA_MODELS=/usr/share/ollama/.ollama/models
+RUN mkdir -p ${OLLAMA_MODELS} \
+  && chown -R dapp:dapp ${OLLAMA_MODELS}
+
+COPY --from=agentic /root/.ollama/models/ ${OLLAMA_MODELS}/
+
+# ADD --chown=dapp:dapp --checksum=sha256:56107492e36165ecc625c1b899d74397e662d04d2e6f2a95906608188930c598 https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf ${OLLAMA_MODELS}/DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf
+
+ENTRYPOINT ["rollup-init"]
+CMD ["node", "index.js"]
