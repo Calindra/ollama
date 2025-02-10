@@ -48,7 +48,7 @@ ENV CUDA_VISIBLE_DEVICES="-1"
 
 COPY ./ollama .
 RUN chmod +x ./ollama
-# RUN ./ollama serve
+RUN echo "hi" > ollama.log && chmod 777 ./ollama.log
 RUN nohup ./ollama serve > /var/log/ollama.log 2>&1 &
     # tail -f /var/log/ollama.log || true
 
