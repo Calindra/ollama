@@ -35,8 +35,8 @@ const handleAdvance: AdvanceRequestHandler = async (data) => {
   const hexString = data.payload.substring(2); // "Hello World" in hex
   const buffer = Buffer.from(hexString, "hex");
   const decodedString = buffer.toString("utf-8");
-  console.log("Decoded string", decodedString);
-  console.log("Received inspect request data " + JSON.stringify(data));
+  console.log("Advance decoded string", decodedString);
+  console.log("Received advance request data " + JSON.stringify(data));
   try {
     const output = await runCommand(decodedString);
     console.log(`Output:\n${output}`);
@@ -50,13 +50,13 @@ const handleInspect: InspectRequestHandler = async (data) => {
   const hexString = data.payload.substring(2); // "Hello World" in hex
   const buffer = Buffer.from(hexString, "hex");
   const decodedString = buffer.toString("utf-8");
+  console.log("Decoded string", decodedString);
   try {
     const output = await runCommand(decodedString);
     console.log(`Output:\n${output}`);
   } catch (error) {
     console.error(error);
   }
-  console.log("Decoded string", decodedString);
   console.log("Received inspect request data " + JSON.stringify(data));
 };
 
