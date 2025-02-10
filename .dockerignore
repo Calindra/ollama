@@ -8,5 +8,6 @@ build
 .cache
 test_data
 .git
-
+./dapp_v1/.cartesi/
+./dapp_v1/node_modules/
 *.ig
