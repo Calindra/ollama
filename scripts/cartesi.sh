@@ -29,7 +29,8 @@ docker create --name builder-riscv64-container builder-riscv64
 docker cp builder-riscv64-container:/opt/build/ollama ./ollama
 docker rm builder-riscv64-container
 
-rm -rfv ./dapp_v1
+echo "Delete dapp_v1"
+rm -rf ./dapp_v1
 
 cartesi create dapp_v1 --template typescript
 
