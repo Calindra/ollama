@@ -19,7 +19,7 @@ fi
 
 ollama serve &
 ollama pull qwen2.5:0.5b
-
+rm -rf ./dapp_v1/.ollama
 mv ~/.ollama ./dapp_v1/
 
 ./scripts/cartesi_setup.sh

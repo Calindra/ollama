@@ -25,7 +25,7 @@ RUN dpkg -i /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb \
   && rm /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb
 
 LABEL io.cartesi.rollups.sdk_version=0.9.0
-LABEL io.cartesi.rollups.ram_size=2000Mi
+LABEL io.cartesi.rollups.ram_size=128Mi
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN <<EOF
@@ -47,12 +47,8 @@ ENV ROLLUP_HTTP_SERVER_URL="http://127.0.0.1:5004"
 ENV CUDA_VISIBLE_DEVICES="-1"
 
 COPY ./ollama .
-
-# copy models
-COPY ./.ollama ~/.ollama
-
 RUN chmod +x ./ollama
-RUN echo "hi" > ollama.log && chmod 777 ./ollama.log
+# RUN ./ollama serve
 RUN nohup ./ollama serve > /var/log/ollama.log 2>&1 &
     # tail -f /var/log/ollama.log || true
 
@@ -60,11 +56,7 @@ RUN nohup ./ollama serve > /var/log/ollama.log 2>&1 &
 # RUN sleep 10 && tail /var/log/ollama.log
 # RUN curl http://127.0.0.1:11434/api/tags
 
-ENV OLLAMA_MODELS=/usr/share/ollama/.ollama/models
-RUN mkdir -p ${OLLAMA_MODELS} \
-  && chown -R dapp:dapp ${OLLAMA_MODELS}
-
-ADD --chown=dapp:dapp --checksum=sha256:56107492e36165ecc625c1b899d74397e662d04d2e6f2a95906608188930c598 https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf ${OLLAMA_MODELS}/DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf
+RUN 
 
 ENTRYPOINT ["rollup-init"]
 CMD ["node", "index.js"]
