@@ -7,7 +7,7 @@ export BUILDKIT_PROGRESS=plain
 
 docker stop $(docker ps -q) || true
 
-docker buildx rm --all-inactive
+docker buildx rm --force --all-inactive
 docker buildx prune --all --force && docker system prune --volumes --force
 
 ./scripts/cartesi_setup.sh
