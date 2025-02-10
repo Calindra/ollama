@@ -10,7 +10,11 @@ if [ -z "$(command -v docker)" ]; then
     exit 1
 fi
 
-docker stop $(docker ps -q) || true
+# Check if there are any running containers before trying to stop them
+if [ ! -z "$(docker ps -q)" ]; then
+    echo "Stopping running containers..."
+    docker stop $(docker ps -q)
+fi
 
 docker buildx rm --force --all-inactive
 docker buildx prune --all --force && docker system prune --volumes --force

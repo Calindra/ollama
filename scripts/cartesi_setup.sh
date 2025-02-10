@@ -9,7 +9,7 @@ else
     echo "Cartesi CLI is already installed."
 fi
 
-docker run --privileged --rm tonistiigi/binfmt:riscv || true
+sudo docker run --privileged --rm tonistiigi/binfmt:riscv || true
 
 cartesi doctor
 
