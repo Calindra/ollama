@@ -1,8 +1,12 @@
 # syntax=docker.io/docker/dockerfile:1
 
-FROM ollama/ollama AS agentic
-RUN nohup ollama serve &
-RUN ollama pull qwen2.5:0.5b
+FROM ollama/ollama:0.5.7 AS agentic
+RUN <<EOF
+  set -eux
+  nohup ollama serve&
+  sleep 10
+  ollama pull qwen2.5:0.5b
+EOF
 # RUN ollama pull hf.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF:Q2_K
 
 # build stage: includes resources necessary for installing dependencies
@@ -12,7 +16,6 @@ RUN ollama pull qwen2.5:0.5b
 # a riscv64 image such as cartesi/node:20-jammy for the build stage,
 # to ensure that the appropriate binaries will be generated.
 FROM node:20.16.0-bookworm AS build-stage
-
 
 WORKDIR /opt/cartesi/dapp
 COPY . .

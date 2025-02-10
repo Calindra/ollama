@@ -23,7 +23,7 @@ docker buildx prune --all --force && docker system prune --volumes --force
 
 echo "Compile ollama"
 rm -rfv ./ollama
-docker build -t builder-riscv64 -f Dockerfile-build .
+docker build -t builder-riscv64 -f Dockerfile-build-optimize .
 docker rm builder-riscv64-container || true
 docker create --name builder-riscv64-container builder-riscv64
 docker cp builder-riscv64-container:/opt/build/ollama ./ollama

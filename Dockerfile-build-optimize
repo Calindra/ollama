@@ -1,0 +1,32 @@
+FROM golang:1.23.5-bookworm AS build-stage
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN <<EOF
+set -e
+apt update
+apt install -y --no-install-recommends \
+    build-essential=12.9 \
+    ca-certificates \
+    g++-riscv64-linux-gnu=4:12.2.0-5 \
+    cmake \
+    ccache \
+    wget
+EOF
+
+WORKDIR /opt/build
+
+ENV GOOS=linux
+ENV GOARCH=riscv64
+ENV CGO_ENABLED=1
+ENV CC=riscv64-linux-gnu-gcc
+ENV CXX=riscv64-linux-gnu-g++
+ENV PATH=/usr/local/go/bin:${PATH}
+ENV NO_CUDA=1
+
+COPY . .
+
+RUN go generate ./...
+RUN go build .
+
+RUN cmake --preset CPU -DCMAKE_CXX_FLAGS="-march=rv64gc"
+RUN cmake --build --preset CPU --parallel
