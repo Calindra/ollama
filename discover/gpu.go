@@ -16,7 +16,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"unsafe"
@@ -190,10 +189,10 @@ func GetGPUInfo() GpuInfoList {
 	// GPUs so we can report warnings if we see Nvidia/AMD but fail to load the libraries
 	gpuMutex.Lock()
 	defer gpuMutex.Unlock()
-	if os.Getenv("CUDA_VISIBLE_DEVICES") == "-1" {
-		resp := []GpuInfo{}
-		return resp
-	}
+	// if os.Getenv("CUDA_VISIBLE_DEVICES") == "-1" {
+	// 	resp := []GpuInfo{}
+	// 	return resp
+	// }
 	needRefresh := true
 	var cHandles *cudaHandles
 	var oHandles *oneapiHandles
@@ -218,18 +217,18 @@ func GetGPUInfo() GpuInfoList {
 	}()
 
 	if !bootstrapped {
-		slog.Info("looking for compatible GPUs")
-		cudaComputeMajorMin, err := strconv.Atoi(CudaComputeMajorMin)
-		if err != nil {
-			slog.Error("invalid CudaComputeMajorMin setting", "value", CudaComputeMajorMin, "error", err)
-		}
-		cudaComputeMinorMin, err := strconv.Atoi(CudaComputeMinorMin)
-		if err != nil {
-			slog.Error("invalid CudaComputeMinorMin setting", "value", CudaComputeMinorMin, "error", err)
-		}
+		// slog.Info("looking for compatible GPUs")
+		// cudaComputeMajorMin, err := strconv.Atoi(CudaComputeMajorMin)
+		// if err != nil {
+		// 	slog.Error("invalid CudaComputeMajorMin setting", "value", CudaComputeMajorMin, "error", err)
+		// }
+		// cudaComputeMinorMin, err := strconv.Atoi(CudaComputeMinorMin)
+		// if err != nil {
+		// 	slog.Error("invalid CudaComputeMinorMin setting", "value", CudaComputeMinorMin, "error", err)
+		// }
 		bootstrapErrors = []error{}
 		needRefresh = false
-		var memInfo C.mem_info_t
+		// var memInfo C.mem_info_t
 
 		mem, err := GetCPUMem()
 		if err != nil {
@@ -252,130 +251,130 @@ func GetGPUInfo() GpuInfoList {
 		}
 
 		// Load ALL libraries
-		cHandles = initCudaHandles()
+		// cHandles = initCudaHandles()
 
 		// NVIDIA
-		for i := range cHandles.deviceCount {
-			if cHandles.cudart != nil || cHandles.nvcuda != nil {
-				gpuInfo := CudaGPUInfo{
-					GpuInfo: GpuInfo{
-						Library: "cuda",
-					},
-					index: i,
-				}
-				var driverMajor int
-				var driverMinor int
-				if cHandles.cudart != nil {
-					C.cudart_bootstrap(*cHandles.cudart, C.int(i), &memInfo)
-				} else {
-					C.nvcuda_bootstrap(*cHandles.nvcuda, C.int(i), &memInfo)
-					driverMajor = int(cHandles.nvcuda.driver_major)
-					driverMinor = int(cHandles.nvcuda.driver_minor)
-				}
-				if memInfo.err != nil {
-					slog.Info("error looking up nvidia GPU memory", "error", C.GoString(memInfo.err))
-					C.free(unsafe.Pointer(memInfo.err))
-					continue
-				}
-				gpuInfo.TotalMemory = uint64(memInfo.total)
-				gpuInfo.FreeMemory = uint64(memInfo.free)
-				gpuInfo.ID = C.GoString(&memInfo.gpu_id[0])
-				gpuInfo.Compute = fmt.Sprintf("%d.%d", memInfo.major, memInfo.minor)
-				gpuInfo.computeMajor = int(memInfo.major)
-				gpuInfo.computeMinor = int(memInfo.minor)
-				gpuInfo.MinimumMemory = cudaMinimumMemory
-				gpuInfo.DriverMajor = driverMajor
-				gpuInfo.DriverMinor = driverMinor
-				variant := cudaVariant(gpuInfo)
+		// for i := range cHandles.deviceCount {
+		// 	if cHandles.cudart != nil || cHandles.nvcuda != nil {
+		// 		gpuInfo := CudaGPUInfo{
+		// 			GpuInfo: GpuInfo{
+		// 				Library: "cuda",
+		// 			},
+		// 			index: i,
+		// 		}
+		// 		var driverMajor int
+		// 		var driverMinor int
+		// 		if cHandles.cudart != nil {
+		// 			C.cudart_bootstrap(*cHandles.cudart, C.int(i), &memInfo)
+		// 		} else {
+		// 			C.nvcuda_bootstrap(*cHandles.nvcuda, C.int(i), &memInfo)
+		// 			driverMajor = int(cHandles.nvcuda.driver_major)
+		// 			driverMinor = int(cHandles.nvcuda.driver_minor)
+		// 		}
+		// 		if memInfo.err != nil {
+		// 			slog.Info("error looking up nvidia GPU memory", "error", C.GoString(memInfo.err))
+		// 			C.free(unsafe.Pointer(memInfo.err))
+		// 			continue
+		// 		}
+		// 		gpuInfo.TotalMemory = uint64(memInfo.total)
+		// 		gpuInfo.FreeMemory = uint64(memInfo.free)
+		// 		gpuInfo.ID = C.GoString(&memInfo.gpu_id[0])
+		// 		gpuInfo.Compute = fmt.Sprintf("%d.%d", memInfo.major, memInfo.minor)
+		// 		gpuInfo.computeMajor = int(memInfo.major)
+		// 		gpuInfo.computeMinor = int(memInfo.minor)
+		// 		gpuInfo.MinimumMemory = cudaMinimumMemory
+		// 		gpuInfo.DriverMajor = driverMajor
+		// 		gpuInfo.DriverMinor = driverMinor
+		// 		variant := cudaVariant(gpuInfo)
 
-				// Start with our bundled libraries
-				if variant != "" {
-					variantPath := filepath.Join(LibOllamaPath, "cuda_"+variant)
-					if _, err := os.Stat(variantPath); err == nil {
-						// Put the variant directory first in the search path to avoid runtime linking to the wrong library
-						gpuInfo.DependencyPath = append([]string{variantPath}, gpuInfo.DependencyPath...)
-					}
-				}
-				gpuInfo.Name = C.GoString(&memInfo.gpu_name[0])
-				gpuInfo.Variant = variant
+		// 		// Start with our bundled libraries
+		// 		if variant != "" {
+		// 			variantPath := filepath.Join(LibOllamaPath, "cuda_"+variant)
+		// 			if _, err := os.Stat(variantPath); err == nil {
+		// 				// Put the variant directory first in the search path to avoid runtime linking to the wrong library
+		// 				gpuInfo.DependencyPath = append([]string{variantPath}, gpuInfo.DependencyPath...)
+		// 			}
+		// 		}
+		// 		gpuInfo.Name = C.GoString(&memInfo.gpu_name[0])
+		// 		gpuInfo.Variant = variant
 
-				if int(memInfo.major) < cudaComputeMajorMin || (int(memInfo.major) == cudaComputeMajorMin && int(memInfo.minor) < cudaComputeMinorMin) {
-					unsupportedGPUs = append(unsupportedGPUs,
-						UnsupportedGPUInfo{
-							GpuInfo: gpuInfo.GpuInfo,
-						})
-					slog.Info(fmt.Sprintf("[%d] CUDA GPU is too old. Compute Capability detected: %d.%d", i, memInfo.major, memInfo.minor))
-					continue
-				}
+		// 		if int(memInfo.major) < cudaComputeMajorMin || (int(memInfo.major) == cudaComputeMajorMin && int(memInfo.minor) < cudaComputeMinorMin) {
+		// 			unsupportedGPUs = append(unsupportedGPUs,
+		// 				UnsupportedGPUInfo{
+		// 					GpuInfo: gpuInfo.GpuInfo,
+		// 				})
+		// 			slog.Info(fmt.Sprintf("[%d] CUDA GPU is too old. Compute Capability detected: %d.%d", i, memInfo.major, memInfo.minor))
+		// 			continue
+		// 		}
 
-				// query the management library as well so we can record any skew between the two
-				// which represents overhead on the GPU we must set aside on subsequent updates
-				if cHandles.nvml != nil {
-					uuid := C.CString(gpuInfo.ID)
-					defer C.free(unsafe.Pointer(uuid))
-					C.nvml_get_free(*cHandles.nvml, uuid, &memInfo.free, &memInfo.total, &memInfo.used)
-					if memInfo.err != nil {
-						slog.Warn("error looking up nvidia GPU memory", "error", C.GoString(memInfo.err))
-						C.free(unsafe.Pointer(memInfo.err))
-					} else {
-						if memInfo.free != 0 && uint64(memInfo.free) > gpuInfo.FreeMemory {
-							gpuInfo.OSOverhead = uint64(memInfo.free) - gpuInfo.FreeMemory
-							slog.Info("detected OS VRAM overhead",
-								"id", gpuInfo.ID,
-								"library", gpuInfo.Library,
-								"compute", gpuInfo.Compute,
-								"driver", fmt.Sprintf("%d.%d", gpuInfo.DriverMajor, gpuInfo.DriverMinor),
-								"name", gpuInfo.Name,
-								"overhead", format.HumanBytes2(gpuInfo.OSOverhead),
-							)
-						}
-					}
-				}
+		// 		// query the management library as well so we can record any skew between the two
+		// 		// which represents overhead on the GPU we must set aside on subsequent updates
+		// 		if cHandles.nvml != nil {
+		// 			uuid := C.CString(gpuInfo.ID)
+		// 			defer C.free(unsafe.Pointer(uuid))
+		// 			C.nvml_get_free(*cHandles.nvml, uuid, &memInfo.free, &memInfo.total, &memInfo.used)
+		// 			if memInfo.err != nil {
+		// 				slog.Warn("error looking up nvidia GPU memory", "error", C.GoString(memInfo.err))
+		// 				C.free(unsafe.Pointer(memInfo.err))
+		// 			} else {
+		// 				if memInfo.free != 0 && uint64(memInfo.free) > gpuInfo.FreeMemory {
+		// 					gpuInfo.OSOverhead = uint64(memInfo.free) - gpuInfo.FreeMemory
+		// 					slog.Info("detected OS VRAM overhead",
+		// 						"id", gpuInfo.ID,
+		// 						"library", gpuInfo.Library,
+		// 						"compute", gpuInfo.Compute,
+		// 						"driver", fmt.Sprintf("%d.%d", gpuInfo.DriverMajor, gpuInfo.DriverMinor),
+		// 						"name", gpuInfo.Name,
+		// 						"overhead", format.HumanBytes2(gpuInfo.OSOverhead),
+		// 					)
+		// 				}
+		// 			}
+		// 		}
 
-				// TODO potentially sort on our own algorithm instead of what the underlying GPU library does...
-				cudaGPUs = append(cudaGPUs, gpuInfo)
-			}
-		}
+		// 		// TODO potentially sort on our own algorithm instead of what the underlying GPU library does...
+		// 		cudaGPUs = append(cudaGPUs, gpuInfo)
+		// 	}
+		// }
 
 		// Intel
-		if envconfig.IntelGPU() {
-			oHandles = initOneAPIHandles()
-			if oHandles != nil && oHandles.oneapi != nil {
-				for d := range oHandles.oneapi.num_drivers {
-					if oHandles.oneapi == nil {
-						// shouldn't happen
-						slog.Warn("nil oneapi handle with driver count", "count", int(oHandles.oneapi.num_drivers))
-						continue
-					}
-					devCount := C.oneapi_get_device_count(*oHandles.oneapi, C.int(d))
-					for i := range devCount {
-						gpuInfo := OneapiGPUInfo{
-							GpuInfo: GpuInfo{
-								Library: "oneapi",
-							},
-							driverIndex: int(d),
-							gpuIndex:    int(i),
-						}
-						// TODO - split bootstrapping from updating free memory
-						C.oneapi_check_vram(*oHandles.oneapi, C.int(d), i, &memInfo)
-						// TODO - convert this to MinimumMemory based on testing...
-						var totalFreeMem float64 = float64(memInfo.free) * 0.95 // work-around: leave some reserve vram for mkl lib used in ggml-sycl backend.
-						memInfo.free = C.uint64_t(totalFreeMem)
-						gpuInfo.TotalMemory = uint64(memInfo.total)
-						gpuInfo.FreeMemory = uint64(memInfo.free)
-						gpuInfo.ID = C.GoString(&memInfo.gpu_id[0])
-						gpuInfo.Name = C.GoString(&memInfo.gpu_name[0])
-						gpuInfo.DependencyPath = []string{LibOllamaPath}
-						oneapiGPUs = append(oneapiGPUs, gpuInfo)
-					}
-				}
-			}
-		}
+		// if envconfig.IntelGPU() {
+		// 	oHandles = initOneAPIHandles()
+		// 	if oHandles != nil && oHandles.oneapi != nil {
+		// 		for d := range oHandles.oneapi.num_drivers {
+		// 			if oHandles.oneapi == nil {
+		// 				// shouldn't happen
+		// 				slog.Warn("nil oneapi handle with driver count", "count", int(oHandles.oneapi.num_drivers))
+		// 				continue
+		// 			}
+		// 			devCount := C.oneapi_get_device_count(*oHandles.oneapi, C.int(d))
+		// 			for i := range devCount {
+		// 				gpuInfo := OneapiGPUInfo{
+		// 					GpuInfo: GpuInfo{
+		// 						Library: "oneapi",
+		// 					},
+		// 					driverIndex: int(d),
+		// 					gpuIndex:    int(i),
+		// 				}
+		// 				// TODO - split bootstrapping from updating free memory
+		// 				C.oneapi_check_vram(*oHandles.oneapi, C.int(d), i, &memInfo)
+		// 				// TODO - convert this to MinimumMemory based on testing...
+		// 				var totalFreeMem float64 = float64(memInfo.free) * 0.95 // work-around: leave some reserve vram for mkl lib used in ggml-sycl backend.
+		// 				memInfo.free = C.uint64_t(totalFreeMem)
+		// 				gpuInfo.TotalMemory = uint64(memInfo.total)
+		// 				gpuInfo.FreeMemory = uint64(memInfo.free)
+		// 				gpuInfo.ID = C.GoString(&memInfo.gpu_id[0])
+		// 				gpuInfo.Name = C.GoString(&memInfo.gpu_name[0])
+		// 				gpuInfo.DependencyPath = []string{LibOllamaPath}
+		// 				oneapiGPUs = append(oneapiGPUs, gpuInfo)
+		// 			}
+		// 		}
+		// 	}
+		// }
 
-		rocmGPUs, err = AMDGetGPUInfo()
-		if err != nil {
-			bootstrapErrors = append(bootstrapErrors, err)
-		}
+		// rocmGPUs, err = AMDGetGPUInfo()
+		// if err != nil {
+		// 	bootstrapErrors = append(bootstrapErrors, err)
+		// }
 		bootstrapped = true
 		if len(cudaGPUs) == 0 && len(rocmGPUs) == 0 && len(oneapiGPUs) == 0 {
 			slog.Info("no compatible GPUs were discovered")
