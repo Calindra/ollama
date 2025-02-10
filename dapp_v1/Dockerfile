@@ -60,5 +60,11 @@ RUN nohup ./ollama serve > /var/log/ollama.log 2>&1 &
 # RUN sleep 10 && tail /var/log/ollama.log
 # RUN curl http://127.0.0.1:11434/api/tags
 
+ENV OLLAMA_MODELS=/usr/share/ollama/.ollama/models
+RUN mkdir -p ${OLLAMA_MODELS} \
+  && chown -R dapp:dapp ${OLLAMA_MODELS}
+
+ADD --chown=dapp:dapp --checksum=sha256:56107492e36165ecc625c1b899d74397e662d04d2e6f2a95906608188930c598 https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf ${OLLAMA_MODELS}/DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf
+
 ENTRYPOINT ["rollup-init"]
 CMD ["node", "index.js"]
