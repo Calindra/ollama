@@ -56,5 +56,7 @@ RUN nohup ./ollama serve > /var/log/ollama.log 2>&1 &
 # RUN sleep 10 && tail /var/log/ollama.log
 # RUN curl http://127.0.0.1:11434/api/tags
 
+RUN 
+
 ENTRYPOINT ["rollup-init"]
 CMD ["node", "index.js"]

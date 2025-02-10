@@ -10,6 +10,18 @@ docker stop $(docker ps -q) || true
 docker buildx rm --force --all-inactive
 docker buildx prune --all --force && docker system prune --volumes --force
 
+if command -v ollama &> /dev/null; then
+    echo "Ollama detected"
+else
+    echo "Install ollama"
+    curl -fsSL https://ollama.com/install.sh | sh
+fi
+
+ollama serve &
+ollama pull qwen2.5:0.5b
+
+mv ~/.ollama ./dapp_v1/
+
 ./scripts/cartesi_setup.sh
 
 echo "Compile ollama"

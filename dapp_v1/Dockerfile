@@ -25,7 +25,7 @@ RUN dpkg -i /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb \
   && rm /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb
 
 LABEL io.cartesi.rollups.sdk_version=0.9.0
-LABEL io.cartesi.rollups.ram_size=128Mi
+LABEL io.cartesi.rollups.ram_size=2000Mi
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN <<EOF
@@ -47,6 +47,10 @@ ENV ROLLUP_HTTP_SERVER_URL="http://127.0.0.1:5004"
 ENV CUDA_VISIBLE_DEVICES="-1"
 
 COPY ./ollama .
+
+# copy models
+COPY ./.ollama ~/.ollama
+
 RUN chmod +x ./ollama
 RUN echo "hi" > ollama.log && chmod 777 ./ollama.log
 RUN nohup ./ollama serve > /var/log/ollama.log 2>&1 &
