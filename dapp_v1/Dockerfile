@@ -8,9 +8,17 @@
 # to ensure that the appropriate binaries will be generated.
 FROM node:20.16.0-bookworm AS build-stage
 
+ENV OLLAMA_MODELS=/usr/share/ollama/.ollama/models
+
 WORKDIR /opt/cartesi/dapp
 COPY . .
 RUN yarn install && yarn build
+
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+RUN nohup ollama serve &
+RUN ollama pull qwen2.5:0.5b
+# RUN ollama pull hf.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF:Q2_K
 
 # runtime stage: produces final image that will be executed
 
@@ -25,7 +33,7 @@ RUN dpkg -i /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb \
   && rm /machine-emulator-tools-v${MACHINE_EMULATOR_TOOLS_VERSION}.deb
 
 LABEL io.cartesi.rollups.sdk_version=0.9.0
-LABEL io.cartesi.rollups.ram_size=128Mi
+LABEL io.cartesi.rollups.ram_size=2048Mi
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN <<EOF
@@ -56,7 +64,13 @@ RUN nohup ./ollama serve > /var/log/ollama.log 2>&1 &
 # RUN sleep 10 && tail /var/log/ollama.log
 # RUN curl http://127.0.0.1:11434/api/tags
 
-RUN 
+ENV OLLAMA_MODELS=/usr/share/ollama/.ollama/models
+RUN mkdir -p ${OLLAMA_MODELS} \
+  && chown -R dapp:dapp ${OLLAMA_MODELS}
+
+COPY --from=build-stage /usr/share/ollama/.ollama/models/ ${OLLAMA_MODELS}/
+
+# ADD --chown=dapp:dapp --checksum=sha256:56107492e36165ecc625c1b899d74397e662d04d2e6f2a95906608188930c598 https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf ${OLLAMA_MODELS}/DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf
 
 ENTRYPOINT ["rollup-init"]
 CMD ["node", "index.js"]

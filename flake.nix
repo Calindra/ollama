@@ -60,7 +60,7 @@
               watchexec
               cmake
               yarn
-              nodejs_22
+              nodejs_20
             ];
 
             shellHook = ''
