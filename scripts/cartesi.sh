@@ -28,7 +28,10 @@ echo "Pristine dapp created with success!"
 cp ./ollama ./dapp_v1/
 rm ./dapp_v1/Dockerfile
 cp ./scripts/cartesi-Dockerfile ./dapp_v1/Dockerfile
+cp ./scripts/cartesi-index.ts  ./dapp_v1/src/index.ts
 
 cd ./dapp_v1
 cartesi build
+
+echo "Cartesi Machine builded with success!"
 cartesi run
