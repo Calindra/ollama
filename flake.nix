@@ -59,6 +59,8 @@
               gcc
               watchexec
               cmake
+              yarn
+              nodejs_22
             ];
 
             shellHook = ''
