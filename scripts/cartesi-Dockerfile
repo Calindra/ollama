@@ -49,11 +49,11 @@ ENV CUDA_VISIBLE_DEVICES="-1"
 COPY ./ollama .
 RUN chmod +x ./ollama
 # RUN ./ollama serve
-RUN ./ollama serve > /var/log/ollama.log 2>&1 & \
+RUN nohup ./ollama serve > /var/log/ollama.log 2>&1 & \
     tail -f /var/log/ollama.log || true
 
-# RUN sleep 3
-# RUN curl http://127.0.0.1:11434/api/tags
+RUN sleep 3
+RUN curl http://127.0.0.1:11434/api/tags
 
 ENTRYPOINT ["rollup-init"]
 CMD ["node", "index.js"]

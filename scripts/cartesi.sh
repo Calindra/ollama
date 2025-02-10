@@ -3,6 +3,7 @@
 set -e
 
 export BUILDX_PROGRESS=plain
+export BUILDKIT_PROGRESS=plain
 
 docker stop $(docker ps -q) || true
 
