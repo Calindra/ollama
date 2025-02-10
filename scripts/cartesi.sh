@@ -10,11 +10,6 @@ if [ -z "$(command -v docker)" ]; then
     exit 1
 fi
 
-if [ -z "$(command -v cartesi)" ]; then
-    echo "Cartesi CLI is not installed. Please install Cartesi CLI and try again."
-    exit 1
-fi
-
 docker stop $(docker ps -q) || true
 
 docker buildx rm --force --all-inactive
