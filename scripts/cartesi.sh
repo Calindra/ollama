@@ -42,7 +42,8 @@ cp -v ./scripts/cartesi-Dockerfile ./dapp_v1/Dockerfile
 cp -v ./scripts/cartesi-index.ts  ./dapp_v1/src/index.ts
 
 cd ./dapp_v1
+yarn install --frozen-lockfile
 cartesi build
 
-echo "Cartesi Machine builded with success!"
+echo "Cartesi Machine built with success!"
 cartesi run

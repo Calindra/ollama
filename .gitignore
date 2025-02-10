@@ -15,5 +15,4 @@ __debug_bin*
 llama/build
 llama/vendor
 .direnv/
-/dapp_v1/.ollama
-
+/dapp_v1/
